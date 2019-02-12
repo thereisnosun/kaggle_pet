@@ -76,5 +76,38 @@ print(train_data['IsMixed'].unique())
 
 #train_data['CatIsMixed'] = train_data
 
-sns.barplot(x='AdoptionSpeed', y='IsMixed', data=train_data)
-plt.show()
+main_count = train_data["AdoptionSpeed"].value_counts(normalize=True).sort_index()
+print(main_count)
+
+
+def prepare_plot_dict(df, col, main_count):
+    main_count = dict(main_count)
+    plot_dict = {}
+    for i in df[col].unique():
+        val_count = dict(df.loc[df[col]==1, 'AdoptionSpeed'].value_counts().sort_index())
+
+        for k, v in main_count.items():
+            if k in val_count:
+                plot_dict[val_count[k]] = ((val_count[k] / sum(val_count.values()))/ main_count[k]) * 100 - 100
+            else:
+                plot_dict[0] = 0
+    return plot_dict
+
+
+def make_count_plot(df, x, hue='AdoptionSpeed', tittle='', main_count=main_count):
+    g = sns.countplot(x=x, data=df, hue=hue)
+#    plt.title(f'Adoption speed {title}')
+    plt.title('Adoption speed {0}'.format(tittle))
+    ax = g.axes
+
+    plot_dict = prepare_plot_dict(df, x, main_count)
+
+    plt.show()
+
+
+make_count_plot(train_data, x='Type', tittle='by pet Type')
+
+
+
+# sns.barplot(x='AdoptionSpeed', y='IsMixed', data=train_data)
+# plt.show()
