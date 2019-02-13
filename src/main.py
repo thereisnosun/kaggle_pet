@@ -6,6 +6,8 @@ import seaborn as sns
 import json
 import os
 
+from src.data_exploration.age_exploration import AgeExplorer
+
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
@@ -14,6 +16,9 @@ train_data = pd.read_csv('../data/all/train/train.csv')
 train_sen = os.listdir('../data/all/train_sentiment/')
 train_metadata = os.listdir('../data/all/train_metadata')
 
+#
+# train_data = train_data.drop('Description', 1)
+# train_data = train_data.drop('RescuerID', 1)
 print('Data HEAD: ')
 print(train_data.head())
 print('-----------------------------------------------------')
@@ -105,9 +110,12 @@ def make_count_plot(df, x, hue='AdoptionSpeed', tittle='', main_count=main_count
     plt.show()
 
 
-make_count_plot(train_data, x='Type', tittle='by pet Type')
+#make_count_plot(train_data, x='Type', tittle='by pet Type')
 
-
+#make_count_plot(train_data, x='Age', tittle='by pet Age')
 
 # sns.barplot(x='AdoptionSpeed', y='IsMixed', data=train_data)
 # plt.show()
+
+age_explorer = AgeExplorer(train_data)
+age_explorer.basic_check()
