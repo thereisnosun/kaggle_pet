@@ -30,6 +30,17 @@ Goal: predict the speed of pet adoption.
  - Meaningless named pets have lower adoption rate.
  - Young pets are more likely to be adopted
  - Not named pets have lower possibility for being adopted
+ - There are more pure breed pets, then mixed.
+ - Maybe it makes sense to split dataset between cats and dogs
+
+
+ Age possible features:
+ 	Less then a year.
+
+
+ Breed possible features:
+  Is Mixed
+
  
 
 

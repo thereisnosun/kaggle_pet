@@ -10,6 +10,7 @@ import json
 import os
 
 from src.data_exploration.age_exploration import AgeExplorer
+from src.data_exploration.breed_exploration import BreedExplorer
 
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
@@ -19,9 +20,9 @@ train_data = pd.read_csv('../data/all/train/train.csv')
 train_sen = os.listdir('../data/all/train_sentiment/')
 train_metadata = os.listdir('../data/all/train_metadata')
 
-#
-# train_data = train_data.drop('Description', 1)
-# train_data = train_data.drop('RescuerID', 1)
+
+train_data = train_data.drop('Description', 1)
+train_data = train_data.drop('RescuerID', 1)
 print('Data HEAD: ')
 print(train_data.head())
 print('-----------------------------------------------------')
@@ -55,7 +56,6 @@ def get_sentiment(df, sen_source, test_train, key):
 # train_data['sent_magnitude'] = get_sentiment(train_data, train_sen, 'train', 'magnitude')
 
 
-
 # train_data['sent_score'].plot.hist()
 # plt.show()
 #
@@ -76,14 +76,6 @@ def get_sentiment(df, sen_source, test_train, key):
 train_data['Type'] = train_data['Type'].apply(lambda x: 'Dog' if x == 1 else 'Cat')
 
 
-train_data['IsMixed'] = train_data['Breed2'].apply(lambda x: 0 if x == 0 else 1)
-print(train_data['IsMixed'].unique())
-
-#train_data['CatIsMixed'] = train_data
-
-
-
-
 
 #make_count_plot(train_data, x='Type', tittle='by pet Type')
 #make_count_plot(train_data, x='Age', tittle='by pet Age')
@@ -92,8 +84,10 @@ print(train_data['IsMixed'].unique())
 # plt.show()
 
 
-age_explorer = AgeExplorer(train_data)
-age_explorer.basic_check()
-train_data_features = age_explorer.get_additional_features()
-age_explorer.plot_data()
+data_explorers = [AgeExplorer(train_data), BreedExplorer(train_data)]
+for explorer in data_explorers:
+    explorer.basic_check()
+    train_data_features = explorer.get_additional_features()
+    explorer.plot_data()
+
 

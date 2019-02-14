@@ -22,13 +22,15 @@ class AgeExplorer(BasicExplorer):
         # sns.violinplot(x='AdoptionSpeed', y='Age', hue='Type',  data=self.data_frame)
         # plt.show()
 
-        plotting.adoption_trends_plot(self.data_frame,'Age')
+
+        #plotting.adoption_trends_plot(self.data_frame,'Age')
 
         # sns.lineplot(y='AdoptionSpeed', x='Age', data=self.data_frame)
         # plt.show()
         #
         # self.data_frame["Age"].plot(kind='hist')
         # plt.show()
+        pass
 
     def get_additional_features(self):
         self.data_frame['LessThenYear'] = self.data_frame['Age'].apply(lambda x: 'YES' if x < 12 else 'NO')
