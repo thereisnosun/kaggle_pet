@@ -1,9 +1,11 @@
 import seaborn as sns
 import pandas as pd
 import matplotlib.pylab as plt
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 from src.data_exploration.basic_explorer import BasicExplorer
-
+import src.data_exploration.utils_plotting as plotting
 
 class AgeExplorer(BasicExplorer):
     def __init__(self, data_frame):
@@ -13,23 +15,25 @@ class AgeExplorer(BasicExplorer):
         BasicExplorer.basic_check(self, 'Age')
 
     def plot_data(self):
-        sns.catplot(x='LessThenYear', y='Age', data=self.train_data)
-        plt.show()
+        # sns.violinplot(x='LessThenYear', y='AdoptionSpeed', data=self.data_frame)
+        # plt.show()
 
         # plt.figure(figsize=(10,10))
-        # sns.violinplot(x='AdoptionSpeed', y='Age', hue='Type',  data=self.train_data)
+        # sns.violinplot(x='AdoptionSpeed', y='Age', hue='Type',  data=self.data_frame)
         # plt.show()
 
-        # sns.lineplot(y='AdoptionSpeed', x='Age', data=self.train_data)
-        # plt.show()
+        plotting.adoption_trends_plot(self.data_frame,'Age')
 
-        # self.train_data["Age"].plot(kind='hist')
+        # sns.lineplot(y='AdoptionSpeed', x='Age', data=self.data_frame)
+        # plt.show()
+        #
+        # self.data_frame["Age"].plot(kind='hist')
         # plt.show()
 
     def get_additional_features(self):
-        self.train_data['LessThenYear'] = self.train_data['Age'].apply(lambda x: 'YES' if x < 12 else 'NO')
-        print('Less then a year pets - ', self.train_data['LessThenYear'].value_counts())
-        return self.train_data
+        self.data_frame['LessThenYear'] = self.data_frame['Age'].apply(lambda x: 'YES' if x < 12 else 'NO')
+        print('Less then a year pets - ', self.data_frame['LessThenYear'].value_counts())
+        return self.data_frame
 
 
 

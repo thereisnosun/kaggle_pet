@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import plotly.plotly as py
+import plotly.graph_objs as go
+
 
 import json
 import os
@@ -47,8 +50,11 @@ def get_sentiment(df, sen_source, test_train, key):
     return sen
 
 
-train_data['sent_score'] = get_sentiment(train_data, train_sen, 'train', 'score')
-train_data['sent_magnitude'] = get_sentiment(train_data, train_sen, 'train', 'magnitude')
+# TODO: uncommented as soon as basic features are analyzed
+# train_data['sent_score'] = get_sentiment(train_data, train_sen, 'train', 'score')
+# train_data['sent_magnitude'] = get_sentiment(train_data, train_sen, 'train', 'magnitude')
+
+
 
 # train_data['sent_score'].plot.hist()
 # plt.show()
@@ -75,33 +81,8 @@ print(train_data['IsMixed'].unique())
 
 #train_data['CatIsMixed'] = train_data
 
-main_count = train_data["AdoptionSpeed"].value_counts(normalize=True).sort_index()
-print(main_count)
 
 
-def prepare_plot_dict(df, col, main_count):
-    main_count = dict(main_count)
-    plot_dict = {}
-    for i in df[col].unique():
-        val_count = dict(df.loc[df[col]==1, 'AdoptionSpeed'].value_counts().sort_index())
-
-        for k, v in main_count.items():
-            if k in val_count:
-                plot_dict[val_count[k]] = ((val_count[k] / sum(val_count.values()))/ main_count[k]) * 100 - 100
-            else:
-                plot_dict[0] = 0
-    return plot_dict
-
-
-def make_count_plot(df, x, hue='AdoptionSpeed', tittle='', main_count=main_count):
-    g = sns.countplot(x=x, data=df, hue=hue)
-#    plt.title(f'Adoption speed {title}')
-    plt.title('Adoption speed {0}'.format(tittle))
-    ax = g.axes
-
-    plot_dict = prepare_plot_dict(df, x, main_count)
-
-    plt.show()
 
 
 #make_count_plot(train_data, x='Type', tittle='by pet Type')
@@ -113,5 +94,6 @@ def make_count_plot(df, x, hue='AdoptionSpeed', tittle='', main_count=main_count
 
 age_explorer = AgeExplorer(train_data)
 age_explorer.basic_check()
-age_explorer.plot_data()
 train_data_features = age_explorer.get_additional_features()
+age_explorer.plot_data()
+
