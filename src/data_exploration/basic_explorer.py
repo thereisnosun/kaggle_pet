@@ -11,7 +11,7 @@ class BasicExplorer:
         print(self.data_frame[column_name].isna().sum())
 
     def get_additional_features(self):
-        pass
+        return self.data_frame
 
     def plot_data(self):
         pass

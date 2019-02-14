@@ -66,14 +66,8 @@ train_data['sent_magnitude'] = get_sentiment(train_data, train_sen, 'train', 'ma
 # train_data["Type"].value_counts().sort_index().plot('barh')
 # plt.show();
 
-# train_data["Age"].plot(kind='hist')
-# plt.show()
-#
 
 train_data['Type'] = train_data['Type'].apply(lambda x: 'Dog' if x == 1 else 'Cat')
-
-# sns.barplot(x='AdoptionSpeed', y='Age', hue='Type', data=train_data)
-# plt.show()
 
 
 train_data['IsMixed'] = train_data['Breed2'].apply(lambda x: 0 if x == 0 else 1)
@@ -111,11 +105,13 @@ def make_count_plot(df, x, hue='AdoptionSpeed', tittle='', main_count=main_count
 
 
 #make_count_plot(train_data, x='Type', tittle='by pet Type')
-
 #make_count_plot(train_data, x='Age', tittle='by pet Age')
 
 # sns.barplot(x='AdoptionSpeed', y='IsMixed', data=train_data)
 # plt.show()
 
+
 age_explorer = AgeExplorer(train_data)
 age_explorer.basic_check()
+age_explorer.plot_data()
+train_data_features = age_explorer.get_additional_features()

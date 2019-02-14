@@ -29,6 +29,7 @@ Goal: predict the speed of pet adoption.
  - Dogs tend to have slight lower adoption rates.
  - Meaningless named pets have lower adoption rate.
  - Young pets are more likely to be adopted
+ - Not named pets have lower possibility for being adopted
  
 
 
