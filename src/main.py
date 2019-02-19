@@ -11,6 +11,7 @@ import os
 
 from src.data_exploration.age_exploration import AgeExplorer
 from src.data_exploration.breed_exploration import BreedExplorer
+from src.data_exploration.color_exploration import ColorExplorer
 
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
@@ -76,6 +77,18 @@ def get_sentiment(df, sen_source, test_train, key):
 train_data['Type'] = train_data['Type'].apply(lambda x: 'Dog' if x == 1 else 'Cat')
 
 
+def assign_gender(type):
+    if type == 1:
+        return 'Male'
+    elif  type == 2:
+        return 'Female'
+    else:
+        return 'Mixed'
+
+
+print( train_data['Gender'].value_counts())
+train_data['Gender'] = train_data['Gender'].apply(assign_gender)
+print( train_data['Gender'].value_counts())
 
 #make_count_plot(train_data, x='Type', tittle='by pet Type')
 #make_count_plot(train_data, x='Age', tittle='by pet Age')
@@ -83,8 +96,8 @@ train_data['Type'] = train_data['Type'].apply(lambda x: 'Dog' if x == 1 else 'Ca
 # sns.barplot(x='AdoptionSpeed', y='IsMixed', data=train_data)
 # plt.show()
 
-
-data_explorers = [AgeExplorer(train_data), BreedExplorer(train_data)]
+#
+data_explorers = [AgeExplorer(train_data), BreedExplorer(train_data), ColorExplorer(train_data)]
 for explorer in data_explorers:
     explorer.basic_check()
     train_data_features = explorer.get_additional_features()
