@@ -8,8 +8,8 @@ from src.data_exploration.basic_explorer import BasicExplorer
 
 
 class BreedExplorer(BasicExplorer):
-    def __init__(self, data_frame):
-        BasicExplorer.__init__(self, data_frame)
+    def __init__(self):
+        BasicExplorer.__init__(self)
 
     def basic_check(self):
         BasicExplorer.basic_check(self, 'Breed1')

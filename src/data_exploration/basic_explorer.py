@@ -1,5 +1,8 @@
 class BasicExplorer:
-    def __init__(self, data_frame):
+    def __init__(self):
+        self.data_frame = None
+
+    def set_data_frame(self, data_frame):
         self.data_frame = data_frame
 
     def basic_check(self, column_name):

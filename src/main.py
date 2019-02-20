@@ -97,10 +97,13 @@ print( train_data['Gender'].value_counts())
 # plt.show()
 
 #
-data_explorers = [AgeExplorer(train_data), BreedExplorer(train_data), ColorExplorer(train_data)]
+data_explorers = [AgeExplorer(), BreedExplorer(), ColorExplorer()]
+train_data_features = train_data
 for explorer in data_explorers:
+    explorer.set_data_frame(train_data_features)
     explorer.basic_check()
     train_data_features = explorer.get_additional_features()
     explorer.plot_data()
 
+#print(train_data_features.head())
 
