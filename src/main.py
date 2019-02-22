@@ -74,7 +74,7 @@ def get_sentiment(df, sen_source, test_train, key):
 # plt.show();
 
 
-train_data['Type'] = train_data['Type'].apply(lambda x: 'Dog' if x == 1 else 'Cat')
+#train_data['Type'] = train_data['Type'].apply(lambda x: 'Dog' if x == 1 else 'Cat')
 
 
 def assign_gender(type):
@@ -86,9 +86,9 @@ def assign_gender(type):
         return 'Mixed'
 
 
-print( train_data['Gender'].value_counts())
-train_data['Gender'] = train_data['Gender'].apply(assign_gender)
-print( train_data['Gender'].value_counts())
+# print( train_data['Gender'].value_counts())
+# train_data['Gender'] = train_data['Gender'].apply(assign_gender)
+# print( train_data['Gender'].value_counts())
 
 #make_count_plot(train_data, x='Type', tittle='by pet Type')
 #make_count_plot(train_data, x='Age', tittle='by pet Age')
@@ -105,5 +105,22 @@ for explorer in data_explorers:
     train_data_features = explorer.get_additional_features()
     explorer.plot_data()
 
-#print(train_data_features.head())
+
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import cross_val_score, cross_val_predict
+
+train_data_features['sent_score'] = get_sentiment(train_data, train_sen, 'train', 'score')
+train_data_features['sent_magnitude'] = get_sentiment(train_data, train_sen, 'train', 'magnitude')
+train_predictions = train_data_features['AdoptionSpeed'].values
+train_data_features = train_data_features.drop('AdoptionSpeed', 1)
+train_data_features = train_data_features.drop('Name', 1) # for the very first test lets drop it
+train_data_features = train_data_features.drop('PetID', 1) # TODO: identify later by it
+print(train_data_features.head())
+
+random_forest = RandomForestClassifier(n_estimators=100, random_state=39)
+train_data_features = train_data_features.reset_index().values
+random_forest.fit(train_data_features, train_predictions)
+val_score = cross_val_score(random_forest, train_data_features, train_predictions, cv=3, scoring='accuracy', n_jobs=-1).mean()
+print(val_score)
 

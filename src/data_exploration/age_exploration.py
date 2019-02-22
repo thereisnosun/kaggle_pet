@@ -33,7 +33,7 @@ class AgeExplorer(BasicExplorer):
         pass
 
     def get_additional_features(self):
-        self.data_frame['LessThenYear'] = self.data_frame['Age'].apply(lambda x: 'YES' if x < 12 else 'NO')
+        self.data_frame['LessThenYear'] = self.data_frame['Age'].apply(lambda x: 1 if x < 12 else 0)
         print('Less then a year pets - ', self.data_frame['LessThenYear'].value_counts())
         return self.data_frame
 
