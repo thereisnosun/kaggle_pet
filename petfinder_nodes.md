@@ -41,6 +41,15 @@ Goal: predict the speed of pet adoption.
  Breed possible features:
   Is Mixed
 
+  Color possible features:
+  OneColored
+  TwoColored
+  ThreeColored
+  Maybe group by the most popular combinations(e.g. - black&white, brown&white)
+  Test if old unnamed is less likely to be adopted
+  Test if unnamed young has different likelyhood to be adopted, comparing to young unnamed
+
+
  
 
 

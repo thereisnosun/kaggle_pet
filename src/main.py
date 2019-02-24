@@ -16,14 +16,22 @@ from src.data_exploration.color_exploration import ColorExplorer
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
-train_data = pd.read_csv('../data/all/train/train.csv')
+train_data = pd.read_csv('../input/train/train.csv')
+test_data = pd.read_csv('../input/test/test.csv')
 
-train_sen = os.listdir('../data/all/train_sentiment/')
-train_metadata = os.listdir('../data/all/train_metadata')
+train_sen = os.listdir('../input/train_sentiment/')
+test_sen = os.listdir('../input/test_sentiment/')
+
+train_metadata = os.listdir('../input/train_metadata')
+test_metadata = os.listdir('../input/test_metadata')
 
 
 train_data = train_data.drop('Description', 1)
 train_data = train_data.drop('RescuerID', 1)
+
+test_data = test_data.drop('Description', 1)
+test_data = test_data.drop('RescuerID', 1)
+
 print('Data HEAD: ')
 print(train_data.head())
 print('-----------------------------------------------------')
@@ -50,6 +58,11 @@ def get_sentiment(df, sen_source, test_train, key):
 
         sen.append(y)
     return sen
+
+
+def create_submission(ids, prediction):
+    df = pd.DataFrame({'PetID': ids,'AdoptionSpeed': prediction }, columns=['PetID', 'AdoptionSpeed']) #TODO: sort columns correctly
+    df.to_csv('../submission.csv',index=False)
 
 
 # TODO: uncommented as soon as basic features are analyzed
@@ -96,7 +109,23 @@ def assign_gender(type):
 # sns.barplot(x='AdoptionSpeed', y='IsMixed', data=train_data)
 # plt.show()
 
-#
+
+def final_preperations(data_features, sent, is_train):
+    data_features['sent_score'] = get_sentiment(train_data, sent, 'train', 'score')
+    data_features['sent_magnitude'] = get_sentiment(train_data, sent, 'train', 'magnitude')
+
+    if is_train:
+        train_predictions = data_features['AdoptionSpeed'].values
+    else:
+        train_predictions = None
+    pet_ids = data_features['PetID']
+    data_features = data_features.drop('AdoptionSpeed', 1)
+    data_features = data_features.drop('Name', 1) # for the very first test lets drop it
+    data_features = data_features.drop('PetID', 1) # TODO: identify later by it
+
+    return data_features, pet_ids, train_predictions
+
+
 data_explorers = [AgeExplorer(), BreedExplorer(), ColorExplorer()]
 train_data_features = train_data
 for explorer in data_explorers:
@@ -105,22 +134,30 @@ for explorer in data_explorers:
     train_data_features = explorer.get_additional_features()
     explorer.plot_data()
 
+test_data_features = test_data
+for explorer in data_explorers:
+    test_data_features = explorer.get_additional_features()
 
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, cross_val_predict
 
-train_data_features['sent_score'] = get_sentiment(train_data, train_sen, 'train', 'score')
-train_data_features['sent_magnitude'] = get_sentiment(train_data, train_sen, 'train', 'magnitude')
-train_predictions = train_data_features['AdoptionSpeed'].values
-train_data_features = train_data_features.drop('AdoptionSpeed', 1)
-train_data_features = train_data_features.drop('Name', 1) # for the very first test lets drop it
-train_data_features = train_data_features.drop('PetID', 1) # TODO: identify later by it
-print(train_data_features.head())
 
+
+
+train_data_features, train_pet_ids, train_predictions = final_preperations(train_data_features, train_sen, True)
+print(train_data_features.head())
 random_forest = RandomForestClassifier(n_estimators=100, random_state=39)
 train_data_features = train_data_features.reset_index().values
 random_forest.fit(train_data_features, train_predictions)
 val_score = cross_val_score(random_forest, train_data_features, train_predictions, cv=3, scoring='accuracy', n_jobs=-1).mean()
 print(val_score)
+
+# just to test output
+test_data_features, test_pet_ids, _ = final_preperations(test_data_features, test_sen, False)
+print(test_data_features.head())
+#print("Train len {0} test len {1}".format(len(train_data_features.columns, len(test_data_features.columns))))
+test_data_features = test_data_features.reset_index().values
+predictions = random_forest.predict(test_data_features)
+create_submission(test_pet_ids, predictions)
 
