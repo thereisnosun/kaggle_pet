@@ -42,13 +42,15 @@ print(train_data.shape)
 print('LENGTH:')
 print(len(train_data))
 
+print("TEST START- ", len(test_data))
+
 
 def get_sentiment(df, sen_source, test_train, key):
     sen = []
     for i in df['PetID']:
         a = i + '.json'
         if a in sen_source:
-            x = '../data/all/%s_sentiment/%s' % (test_train, a)
+            x = '../input/%s_sentiment/%s' % (test_train, a)
             with open(x, 'r') as f:
                 sentiment = json.load(f)
 
@@ -111,15 +113,16 @@ def assign_gender(type):
 
 
 def final_preperations(data_features, sent, is_train):
-    data_features['sent_score'] = get_sentiment(train_data, sent, 'train', 'score')
-    data_features['sent_magnitude'] = get_sentiment(train_data, sent, 'train', 'magnitude')
+    data_features['sent_score'] = get_sentiment(data_features, sent, 'train' if is_train else 'test', 'score')
+    data_features['sent_magnitude'] = get_sentiment(data_features, sent, 'train' if is_train else 'test', 'magnitude')
 
     if is_train:
         train_predictions = data_features['AdoptionSpeed'].values
     else:
         train_predictions = None
     pet_ids = data_features['PetID']
-    data_features = data_features.drop('AdoptionSpeed', 1)
+    if is_train:
+        data_features = data_features.drop('AdoptionSpeed', 1)
     data_features = data_features.drop('Name', 1) # for the very first test lets drop it
     data_features = data_features.drop('PetID', 1) # TODO: identify later by it
 
@@ -134,28 +137,41 @@ for explorer in data_explorers:
     train_data_features = explorer.get_additional_features()
     explorer.plot_data()
 
+
+#exit(0)
+
 test_data_features = test_data
 for explorer in data_explorers:
+    explorer.set_data_frame(test_data_features)
     test_data_features = explorer.get_additional_features()
+
+
 
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, cross_val_predict
-
-
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.metrics import cohen_kappa_score
 
 
 train_data_features, train_pet_ids, train_predictions = final_preperations(train_data_features, train_sen, True)
 print(train_data_features.head())
 random_forest = RandomForestClassifier(n_estimators=100, random_state=39)
+#this one is better
+# random_forest = AdaBoostClassifier(RandomForestClassifier(random_state=39, n_estimators=1000),
+#                                  n_estimators=200,
+#                                  algorithm="SAMME.R", learning_rate=0.5)
 train_data_features = train_data_features.reset_index().values
 random_forest.fit(train_data_features, train_predictions)
 val_score = cross_val_score(random_forest, train_data_features, train_predictions, cv=3, scoring='accuracy', n_jobs=-1).mean()
-print(val_score)
+train_predictions_result = random_forest.predict(train_data_features)
+kappa_score = cohen_kappa_score(train_predictions, train_predictions_result).mean()
+print('Cross val score {0}. Cohen kappa - {1}'.format(val_score, kappa_score))
 
 # just to test output
+print("Before test data is - ", len(test_data_features))
 test_data_features, test_pet_ids, _ = final_preperations(test_data_features, test_sen, False)
-print(test_data_features.head())
+print("test data is - ", len(test_data_features))
 #print("Train len {0} test len {1}".format(len(train_data_features.columns, len(test_data_features.columns))))
 test_data_features = test_data_features.reset_index().values
 predictions = random_forest.predict(test_data_features)
