@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.plotly as py
 import plotly.graph_objs as go
-
+from wordcloud import WordCloud
 
 import json
 import os
@@ -18,6 +18,8 @@ pd.set_option('display.width', 1000)
 
 train_data = pd.read_csv('../input/train/train.csv')
 test_data = pd.read_csv('../input/test/test.csv')
+
+all_data = pd.concat([train_data, test_data])
 
 train_sen = os.listdir('../input/train_sentiment/')
 test_sen = os.listdir('../input/test_sentiment/')
@@ -129,14 +131,50 @@ def final_preperations(data_features, sent, is_train):
     return data_features, pet_ids, train_predictions
 
 
+def check_name(name):
+    if len(name) <= 2:
+        return 1
+
+    return 1 if any(char.isdigit() for char in name) else 0
+
+
+def feature_engineer(data_features):
+    data_features['HasName'] = data_features['Name'].apply(lambda x: 1 if x else 0)
+    data_features['BadName'] = data_features['Name'].apply(lambda name: check_name(str(name)))
+    return data_features
+
+
+def plot_text(name):
+    plt.subplot(1, 2, 1)
+    text_cat = ' '.join(all_data.loc[all_data['Type'] == name, 'Name'].fillna('').values)
+    wordcloud = WordCloud(max_font_size=None, background_color='white',
+                          width=1200, height=1000).generate(text_cat)
+    plt.imshow(wordcloud)
+    plt.title('Top {0} names'.format(name))
+    plt.axis("off")
+
+
+
+def plot_data(data_features):
+    #text
+    #fig, ax = plt.subplot(figsize=(16, 12))
+    #plot_text('1')
+    pass
+
+
 data_explorers = [AgeExplorer(), BreedExplorer(), ColorExplorer()]
 train_data_features = train_data
 for explorer in data_explorers:
     explorer.set_data_frame(train_data_features)
-    explorer.basic_check()
+    #explorer.basic_check()
     train_data_features = explorer.get_additional_features()
     explorer.plot_data()
 
+print("Does not have name - ", train_data['Name'].isna().sum())
+
+plot_data(train_data_features)
+train_data_features = feature_engineer(train_data_features)
+print('Bad named pets - ', train_data_features.where(train_data_features['BadName'] == 1).count())
 
 #exit(0)
 
@@ -145,7 +183,7 @@ for explorer in data_explorers:
     explorer.set_data_frame(test_data_features)
     test_data_features = explorer.get_additional_features()
 
-
+test_data_features = feature_engineer(test_data_features)
 
 
 from sklearn.ensemble import RandomForestClassifier
@@ -165,7 +203,7 @@ train_data_features = train_data_features.reset_index().values
 random_forest.fit(train_data_features, train_predictions)
 val_score = cross_val_score(random_forest, train_data_features, train_predictions, cv=3, scoring='accuracy', n_jobs=-1).mean()
 train_predictions_result = random_forest.predict(train_data_features)
-kappa_score = cohen_kappa_score(train_predictions, train_predictions_result).mean()
+kappa_score = cohen_kappa_score(train_predictions, train_predictions_result, weights='quadratic').mean()
 print('Cross val score {0}. Cohen kappa - {1}'.format(val_score, kappa_score))
 
 # just to test output

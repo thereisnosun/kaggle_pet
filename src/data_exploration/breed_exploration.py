@@ -7,6 +7,9 @@ import plotly.graph_objs as go
 from src.data_exploration.basic_explorer import BasicExplorer
 
 
+def check_breed(breed):
+    pass
+
 class BreedExplorer(BasicExplorer):
     def __init__(self):
         BasicExplorer.__init__(self)
@@ -14,6 +17,7 @@ class BreedExplorer(BasicExplorer):
     def basic_check(self):
         BasicExplorer.basic_check(self, 'Breed1')
         BasicExplorer.basic_check(self, 'Breed2')
+
 
     def plot_data(self):
         pass
