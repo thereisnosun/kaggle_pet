@@ -6,12 +6,19 @@ import plotly.graph_objs as go
 
 from src.data_exploration.basic_explorer import BasicExplorer
 
+mixed_breeds_id = [307]
 
-def check_breed(breed):
-    pass
+def check_if_pure_breed(row, breed_df):
+    if int(row['Breed2']):
+        return 0
+    breed = row['Breed1']
+    int_breed = int(breed)
+    return int_breed in mixed_breeds_id
 
 class BreedExplorer(BasicExplorer):
     def __init__(self):
+        self.breed_df = pd.read_csv('../input/breed_labels.csv')
+        self.breed_df['BreedName'] = self.breed_df['BreedName'].apply(lambda name: name.lower())
         BasicExplorer.__init__(self)
 
     def basic_check(self):
@@ -23,10 +30,9 @@ class BreedExplorer(BasicExplorer):
         pass
 
     def get_additional_features(self):
-        self.data_frame['PureBreed'] = self.data_frame['Breed2'].apply(lambda x: 1 if x == 0 else 0)
+        self.data_frame['PureBreed'] = self.data_frame.apply(lambda row: check_if_pure_breed(row, self.breed_df), axis=1)
         pure_breed = self.data_frame['PureBreed'].where(self.data_frame['PureBreed'] == 1).count()
         print('Pure bree number - ', pure_breed)
-        #self.data_frame.where
         # TODO: calc mixed cats and mixed dogs, calc ratio mixed to pure breed
 
 

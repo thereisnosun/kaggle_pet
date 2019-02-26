@@ -194,6 +194,7 @@ from sklearn.metrics import cohen_kappa_score
 
 train_data_features, train_pet_ids, train_predictions = final_preperations(train_data_features, train_sen, True)
 print(train_data_features.head())
+
 random_forest = RandomForestClassifier(n_estimators=100, random_state=39)
 #this one is better
 # random_forest = AdaBoostClassifier(RandomForestClassifier(random_state=39, n_estimators=1000),
@@ -203,7 +204,9 @@ train_data_features = train_data_features.reset_index().values
 random_forest.fit(train_data_features, train_predictions)
 val_score = cross_val_score(random_forest, train_data_features, train_predictions, cv=3, scoring='accuracy', n_jobs=-1).mean()
 train_predictions_result = random_forest.predict(train_data_features)
-kappa_score = cohen_kappa_score(train_predictions, train_predictions_result, weights='quadratic').mean()
+
+kappa_score = cohen_kappa_score(train_predictions, train_predictions_result, weights='quadratic')
+print(kappa_score)
 print('Cross val score {0}. Cohen kappa - {1}'.format(val_score, kappa_score))
 
 # just to test output
