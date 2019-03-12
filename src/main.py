@@ -13,6 +13,7 @@ from src.data_exploration.age_exploration import AgeExplorer
 from src.data_exploration.breed_exploration import BreedExplorer
 from src.data_exploration.color_exploration import ColorExplorer
 
+
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 1000)
 
@@ -26,13 +27,6 @@ test_sen = os.listdir('../input/test_sentiment/')
 
 train_metadata = os.listdir('../input/train_metadata')
 test_metadata = os.listdir('../input/test_metadata')
-
-
-train_data = train_data.drop('Description', 1)
-train_data = train_data.drop('RescuerID', 1)
-
-test_data = test_data.drop('Description', 1)
-test_data = test_data.drop('RescuerID', 1)
 
 print('Data HEAD: ')
 print(train_data.head())
@@ -140,7 +134,26 @@ def check_name(name):
 
 def feature_engineer(data_features):
     data_features['HasName'] = data_features['Name'].apply(lambda x: 1 if x else 0)
-    data_features['BadName'] = data_features['Name'].apply(lambda name: check_name(str(name)))
+    data_features['BadName'] = data_features['Name'].apply(lambda name: check_name(str(name))) # for some reason does not help
+
+    data_features['IsFree'] = data_features['Fee'].apply(lambda price: 1 if price > 0 else 0)
+    data_features = data_features.drop('Fee', 1)
+
+    data_features['DescriptionLen'] = data_features['Description'].apply(lambda descr: len(str(descr)))
+    data_features['DescriptionWords'] = data_features['Description'].apply(lambda descr: str(descr).count(' '))
+    #TODO: classify manitude and score, to positive and negative
+    data_features['WordsLen'] = data_features['DescriptionLen'] / data_features['DescriptionWords']
+    data_features['WordsLen'] = data_features['WordsLen'].fillna(0)
+    data_features['WordsLen'] = data_features['WordsLen'].apply(lambda x: 0 if x == float("inf") else 0)
+    # calc description words, calc description length
+
+
+    data_features = data_features.drop('Description', 1)
+    data_features = data_features.drop('RescuerID', 1)
+
+
+
+
     return data_features
 
 
@@ -174,7 +187,7 @@ print("Does not have name - ", train_data['Name'].isna().sum())
 
 plot_data(train_data_features)
 train_data_features = feature_engineer(train_data_features)
-print('Bad named pets - ', train_data_features.where(train_data_features['BadName'] == 1).count())
+#print('Bad named pets - ', train_data_features.where(train_data_features['BadName'] == 1).count())
 
 #exit(0)
 
@@ -190,20 +203,44 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.metrics import cohen_kappa_score
+from sklearn.model_selection import StratifiedKFold
 
 
 train_data_features, train_pet_ids, train_predictions = final_preperations(train_data_features, train_sen, True)
 print(train_data_features.head())
 
-random_forest = RandomForestClassifier(n_estimators=100, random_state=39)
+n_folds = 5
+folds = StratifiedKFold(n_splits=5, shuffle=True, random_state=39)
+total_kappa = 0
+for n_folds, (train_index, valid_index) in enumerate(folds.split(train_data_features, train_predictions)):
+
+    features_train, features_valid = train_data_features.iloc[train_index], train_data_features.iloc[valid_index]
+    predictions_train, predictions_valid = train_predictions[train_index], train_predictions[valid_index]
+
+    final_model = RandomForestClassifier(n_estimators=100, random_state=39)
+    final_model.fit(features_train, predictions_train)
+
+    predict_res_train = final_model.predict(features_train)
+    predict_res_valid = final_model.predict(features_valid)
+    kappa_score = cohen_kappa_score(predictions_valid, predict_res_valid, weights='quadratic')
+    total_kappa += kappa_score
+
+    print('{0} number cappa score is {1}'.format(n_folds, kappa_score))
+
+print('Total kappa is ',  (total_kappa / 5) )
+
+
+
+
+
 #this one is better
-# random_forest = AdaBoostClassifier(RandomForestClassifier(random_state=39, n_estimators=1000),
+# final_model = AdaBoostClassifier(RandomForestClassifier(random_state=39, n_estimators=1000),
 #                                  n_estimators=200,
 #                                  algorithm="SAMME.R", learning_rate=0.5)
 train_data_features = train_data_features.reset_index().values
-random_forest.fit(train_data_features, train_predictions)
-val_score = cross_val_score(random_forest, train_data_features, train_predictions, cv=3, scoring='accuracy', n_jobs=-1).mean()
-train_predictions_result = random_forest.predict(train_data_features)
+final_model.fit(train_data_features, train_predictions)
+val_score = cross_val_score(final_model, train_data_features, train_predictions, cv=3, scoring='accuracy', n_jobs=-1).mean()
+train_predictions_result = final_model.predict(train_data_features)
 
 kappa_score = cohen_kappa_score(train_predictions, train_predictions_result, weights='quadratic')
 print(kappa_score)
@@ -215,6 +252,8 @@ test_data_features, test_pet_ids, _ = final_preperations(test_data_features, tes
 print("test data is - ", len(test_data_features))
 #print("Train len {0} test len {1}".format(len(train_data_features.columns, len(test_data_features.columns))))
 test_data_features = test_data_features.reset_index().values
-predictions = random_forest.predict(test_data_features)
+predictions = final_model.predict(test_data_features)
 create_submission(test_pet_ids, predictions)
+
+
 

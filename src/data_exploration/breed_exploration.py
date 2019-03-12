@@ -13,7 +13,10 @@ def check_if_pure_breed(row, breed_df):
         return 0
     breed = row['Breed1']
     int_breed = int(breed)
-    return int_breed in mixed_breeds_id
+    if int_breed in mixed_breeds_id:
+        return 0
+    else:
+        return 1
 
 class BreedExplorer(BasicExplorer):
     def __init__(self):
@@ -30,7 +33,8 @@ class BreedExplorer(BasicExplorer):
         pass
 
     def get_additional_features(self):
-        self.data_frame['PureBreed'] = self.data_frame.apply(lambda row: check_if_pure_breed(row, self.breed_df), axis=1)
+        #self.data_frame['PureBreed'] = self.data_frame.apply(lambda row: check_if_pure_breed(row, self.breed_df), axis=1)
+        self.data_frame['PureBreed'] = self.data_frame['Breed2'].apply(lambda x: 1 if x == 0 else 0)
         pure_breed = self.data_frame['PureBreed'].where(self.data_frame['PureBreed'] == 1).count()
         print('Pure bree number - ', pure_breed)
         # TODO: calc mixed cats and mixed dogs, calc ratio mixed to pure breed
